@@ -49,12 +49,7 @@ namespace Order_Service_Infrastructure.RabbitMQ.Consumers
                     var content = Encoding.UTF8.GetString(eventArgs.Body.ToArray());
                     var message = JsonConvert.DeserializeObject<StockReservedEvent>(content) ?? throw new JsonException("Mensagem inválida.");
 
-                    var success = await mediator.Send(new UpdateOrderStatusCommand
-                    {
-                        MessageId = message.MessageId,
-                        OrderId = message.OrderId,
-                        OrderStatus = OrderStatusEnum.StockUpdated
-                    });
+                    var success = await mediator.Send(new UpdateOrderStatusCommand(message.MessageId, message.OrderId, OrderStatusEnum.StockUpdated));
 
                     _channel.BasicAck(eventArgs.DeliveryTag, false);
 

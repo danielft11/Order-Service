@@ -9,6 +9,14 @@ namespace Order_Service_Infrastructure.Persistence.Repository
     {
         private readonly OrderDBContext _context = context;
 
+        public async Task<IEnumerable<Order>> GetOrders()
+        {
+            return await _context.Orders
+            .Include(o => o.Items)
+            .AsNoTracking()
+            .ToListAsync();
+        }
+
         public async Task AddAsync(Order order) => await _context.Orders.AddAsync(order);
 
         public void UpdateOrder(Order order) => _context.Orders.Update(order);

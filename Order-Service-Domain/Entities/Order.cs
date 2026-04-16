@@ -10,7 +10,7 @@ namespace Order_Service_Domain.Entities
         public OrderStatusEnum Status { get; private set; }
         public DateTime CreatedAt { get; private set; }
 
-        public List<OrderItem> Items { get; private set; }
+        public List<OrderItem> Items { get; private set; } = [];
 
         protected Order() { }
 
