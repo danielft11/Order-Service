@@ -1,7 +1,7 @@
 ﻿using MediatR;
 using Order_Service_Application.DTOs;
 
-namespace Order_Service_Application.UseCases.CreateOrder.Commands
+namespace Order_Service_Application.UseCases.CreateOrder
 {
     public class CreateOrderCommand : IRequest<Guid>
     {

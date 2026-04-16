@@ -1,10 +1,9 @@
 ﻿using MediatR;
 using Order_Service_Application.Interfaces;
 using Order_Service_Application.Outbox;
-using Order_Service_Application.UseCases.CreateOrder.Commands;
 using Order_Service_Domain.Interfaces;
 
-namespace Order_Service_Application.UseCases.CreateOrder.Handlers
+namespace Order_Service_Application.UseCases.UpdateOrder
 {
     public class UpdateOrderStatusHandler(IOrderRepository repository, IProcessedMessageRepository processedRepository) : IRequestHandler<UpdateOrderStatusCommand, Unit>
     {
@@ -23,7 +22,7 @@ namespace Order_Service_Application.UseCases.CreateOrder.Handlers
             });
 
             var order = await _repository.GetByIdAsync(request.OrderId);
-            if (order is not null) 
+            if (order is not null)
             {
                 order.SetOrderStatus(request.OrderStatus);
 

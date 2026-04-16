@@ -2,12 +2,11 @@
 using Order_Service_Application.DTOs;
 using Order_Service_Application.Interfaces;
 using Order_Service_Application.Outbox;
-using Order_Service_Application.UseCases.CreateOrder.Commands;
 using Order_Service_Domain.Entities;
 using Order_Service_Domain.Interfaces;
 using System.Text.Json;
 
-namespace Order_Service_Application.UseCases.CreateOrder.Handlers
+namespace Order_Service_Application.UseCases.CreateOrder
 {
     public class CreateOrderHandler(IOrderRepository orderRepository, IOutboxRepository outboxRepository) : IRequestHandler<CreateOrderCommand, Guid>
     {

@@ -1,7 +1,7 @@
 ﻿using MediatR;
 using Order_Service_Domain.Enums;
 
-namespace Order_Service_Application.UseCases.CreateOrder.Commands
+namespace Order_Service_Application.UseCases.UpdateOrder
 {
     public class UpdateOrderStatusCommand : IRequest<Unit>
     {
