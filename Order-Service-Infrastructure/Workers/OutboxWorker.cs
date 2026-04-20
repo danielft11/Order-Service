@@ -1,9 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Contracts;
+using MassTransit;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Newtonsoft.Json;
 using Order_Service_Infrastructure.Persistence.DBContext;
-using Order_Service_Infrastructure.RabbitMQ.Publishers;
-using System.Text;
 
 namespace Order_Service_Infrastructure.Workers
 {
@@ -13,12 +14,13 @@ namespace Order_Service_Infrastructure.Workers
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            using var scope = _serviceProvider.CreateScope();
-            var context = scope.ServiceProvider.GetRequiredService<OrderDBContext>();
-            var publisher = scope.ServiceProvider.GetRequiredService<IEventPublisher>();
-
             while (!stoppingToken.IsCancellationRequested) 
-            {    
+            {
+                using var scope = _serviceProvider.CreateScope();
+                var context = scope.ServiceProvider.GetRequiredService<OrderDBContext>();
+
+                var publishEndpoint = scope.ServiceProvider.GetRequiredService<IPublishEndpoint>();
+
                 var messages = await context.OutboxMessages
                     .Where(m => m.ProcessedOn == null)
                     .ToListAsync(stoppingToken);
@@ -27,8 +29,8 @@ namespace Order_Service_Infrastructure.Workers
                 {
                     try
                     {
-                        var messageBytes = Encoding.UTF8.GetBytes(message.Content);
-                        await publisher.PublishAsync(messageBytes);
+                        var orderCreatedEvent = JsonConvert.DeserializeObject<OrderCreatedEvent>(message.Content) ?? throw new JsonException("Mensagem inválida.");
+                        await publishEndpoint.Publish(orderCreatedEvent, stoppingToken);
 
                         message.ProcessedOn = DateTime.UtcNow;
                     }

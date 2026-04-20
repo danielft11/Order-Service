@@ -1,15 +1,13 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using MassTransit;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Order_Service_Application.Interfaces;
 using Order_Service_Domain.Interfaces;
 using Order_Service_Infrastructure.Persistence.DBContext;
 using Order_Service_Infrastructure.Persistence.Repository;
-using Order_Service_Infrastructure.RabbitMQ;
 using Order_Service_Infrastructure.RabbitMQ.Consumers;
-using Order_Service_Infrastructure.RabbitMQ.Publishers;
 using System.Reflection;
-
 
 namespace Order_Service_Infrastructure
 {
@@ -27,9 +25,7 @@ namespace Order_Service_Infrastructure
             AddRepositories();
             AddingMediatR();
             AddWorker();
-            AddRabbitMQConfiguration();
-            AddRabbitMQConsumer();
-            AddRabbitMQPublisher();
+            AddMassTransit();
 
             return services;
         }
@@ -50,20 +46,28 @@ namespace Order_Service_Infrastructure
         public static void AddingMediatR() => _services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.Load("Order-Service-Application")));
 
         public static void AddWorker() => _services.AddHostedService<Workers.OutboxWorker>();
-        
-        private static void AddRabbitMQConfiguration()
+
+        private static void AddMassTransit() 
         {
-            _services.Configure<RabbitMqConfiguration>(_configuration.GetSection("RabbitMq"));
-            _services.AddSingleton<IRabbitMQConnection, RabbitMQConnection>();
+            _services.AddMassTransit(x =>
+            {
+                // registra os consumers
+                x.AddConsumer<StockRejectedConsumer>();
+                x.AddConsumer<StockReservedConsumer>();
+
+                x.UsingRabbitMq((context, cfg) =>
+                {
+                    cfg.Host("localhost", "/", h =>
+                    {
+                        h.Username("guest");
+                        h.Password("guest");
+                    });
+
+                    // mapeia automaticamente consumers → filas
+                    cfg.ConfigureEndpoints(context);
+                });
+            });
         }
-
-        private static void AddRabbitMQConsumer() 
-        {
-            _services.AddHostedService<StockReservedConsumer>();
-            _services.AddHostedService<StockRejectedConsumer>();
-        } 
-
-        public static void AddRabbitMQPublisher() => _services.AddSingleton<IEventPublisher, OrderPublisher>();
 
     }
 }
