@@ -6,9 +6,9 @@ using Order_Service_Domain.Enums;
 
 namespace Order_Service_Infrastructure.RabbitMQ.Consumers
 {
-    public class StockRejectedConsumer(IMediator mediator) : IConsumer<StockReservedEvent>
+    public class StockRejectedConsumer(IMediator mediator) : IConsumer<StockRejectEvent>
     {
-        public async Task Consume(ConsumeContext<StockReservedEvent> context)
+        public async Task Consume(ConsumeContext<StockRejectEvent> context)
         {
             var message = context.Message;
 
